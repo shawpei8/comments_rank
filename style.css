@@ -1,0 +1,45 @@
+.back-to-top {
+  width: 30px;
+  height: 30px;
+  position: fixed;
+  bottom: 20%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #5e5c5c;
+  /* padding: 10px; */
+  border-radius: 50%;
+  /* why 1.0s? it's all about testing */
+  transition: transform 1.0s ease;
+  opacity: 0.6;
+  z-index: 99;
+  visibility: hidden;
+}
+
+.back-to-top:hover {
+  opacity: 1;
+}
+
+.back-to-top.show {
+  visibility: visible;
+}
+
+.arrow-up {
+  margin-top: 2px;
+  border: solid whitesmoke;
+  border-width: 2px 2px 0 0;
+  display: inline-block;
+  padding: 4px;
+  transform: rotate(-45deg);
+}
+
+/* .arrow-up::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 6px;
+  border: solid whitesmoke;
+  border-width: 2px 2px 0 0;
+  display: inline-block;
+  padding: 4px;
+} */

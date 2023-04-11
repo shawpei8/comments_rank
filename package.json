@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@types/arrive": "^2.4.1",
+    "@types/chrome": "^0.0.190",
+    "@types/dompurify": "^2.3.3",
+    "@types/node": "^17.0.41"
+  },
+  "dependencies": {
+    "arrive": "^2.4.1"
+  }
+}

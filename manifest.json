@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube Comment Rank",
+  "version": "0.1",
+  "description": "Sort comments by different criteria",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://*.youtube.com/watch*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "./icons/icon16.png",
+      "32": "./icons/icon32.png"
+    },
+    "default_popup": "./popups/popup.html"
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "./icons/icon16.png",
+    "32": "./icons/icon32.png",
+    "48": "./icons/icon48.png",
+    "128": "./icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://*.youtube.com/*"
+      ],
+      "resources": [
+        "page.js",
+        "style.css"
+      ]
+    }
+  ]
+}

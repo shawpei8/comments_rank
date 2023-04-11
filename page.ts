@@ -1,29 +1,4 @@
 (() => {
-  /*
-  const YTI_URL = 'https://www.youtube.com/youtubei/v1/next?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8&prettyPrint=false';
-  const myFetch = window.fetch;
-  window.fetch = function theFetch(...args) {
-    return new Promise((resolve, reject) => {
-      myFetch.apply(this, args).then((response) => {
-        // postRequestCheck(response);
-        if (response && response.url && response.url.startsWith('https://www.youtube.com/youtubei/v1/next')) {
-          console.log("old", response);
-          response.clone().json().then((json) => {
-            const res = new Response(json);
-            Object.defineProperty(res, "type", { value: "basic" });
-            // Object.defineProperty(res, "url", { value: YTI_URL });
-            console.log("new", res);
-            response = res;
-          });
-        }
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
-  };
-  */
-
   // do when certain element exsist
   function waitForElem(selector: string, onceOnly = true) {
     return new Promise((resolve: (value: Element) => void) => {

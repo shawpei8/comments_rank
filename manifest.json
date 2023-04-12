@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Youtube Comment Rank",
+  "name": "Comments Rank",
   "version": "0.1",
   "description": "Sort comments by different criteria",
   "permissions": [

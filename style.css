@@ -4,14 +4,14 @@
   position: fixed;
   bottom: 20%;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  background-color: #5e5c5c;
+  background-color: #0288D1;
   /* padding: 10px; */
   border-radius: 50%;
   /* why 1.0s? it's all about testing */
   transition: transform 1.0s ease;
-  opacity: 0.6;
+  opacity: 0.8;
   z-index: 99;
   visibility: hidden;
 }
@@ -25,11 +25,12 @@
 }
 
 .arrow-up {
-  margin-top: 2px;
+  margin-top: 5px;
+  margin-left: 1px;
   border: solid whitesmoke;
   border-width: 2px 2px 0 0;
   display: inline-block;
-  padding: 4px;
+  padding: 5px;
   transform: rotate(-45deg);
 }
 

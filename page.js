@@ -169,10 +169,12 @@
             else {
                 const elemTop = elem.getBoundingClientRect().top + window.scrollY;
                 const header = (_a = elem.querySelector('#header')) === null || _a === void 0 ? void 0 : _a.children[0];
-                const style = getComputedStyle(header);
+                const style = window.getComputedStyle(header);
                 const marginTop = parseInt(style.getPropertyValue('margin-top'));
                 const scrollY = elemTop - menuHeight - marginTop;
-                window.scrollTo({ top: scrollY, left: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    window.scrollTo({ top: scrollY, left: 0, behavior: 'smooth' });
+                }, 200);
                 toTopButton.style.transform += 'rotate(180deg)';
                 arrowDirection = 'down';
             }

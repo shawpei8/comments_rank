@@ -151,6 +151,14 @@
     observer.observe(elem, { childList: true });
   });
 
+  // function scrollToPosition(position: number, retries = 10) {
+  //   console.log('retries is ' + retries);
+  //   window.scrollTo({ top: position, left: 0, behavior: 'smooth' });
+  //   if (Math.abs(window.scrollY - position) > 5 && retries > 0) {
+  //     scrollToPosition(position, retries - 1);
+  //   }
+  // };
+
   waitForElem('#comments').then(elem => {
     console.log(elem);
     // create the button element
@@ -169,7 +177,7 @@
     window.addEventListener('scroll', () => {
       currentScrollTop = window.scrollY || document.documentElement.scrollTop;
       const commentsTop = elem.getBoundingClientRect().top;
-      // make sure the button is visible when the comments section is scrolled to the top
+      // make sure the button is visible when scrolling to comments top
       if (commentsTop - menuHeight - toTopButton.offsetHeight < 0) {
         toTopButton.style.visibility = 'visible';
       } else {
@@ -177,6 +185,7 @@
       }
     });
 
+    // back to top button click event
     toTopButton.addEventListener('click', function (event) {
       event.preventDefault(); //prevent default anchor behavior
       if (currentScrollTop > previousScrollTop) {
@@ -191,11 +200,14 @@
       }
       else {
         const elemTop = elem.getBoundingClientRect().top + window.scrollY;
-        const header = elem.querySelector('#header')?.children[0] as Element
-        const style = getComputedStyle(header);
+        const header = elem.querySelector('#header')?.children[0] as Element;
+        const style = window.getComputedStyle(header);
         const marginTop = parseInt(style.getPropertyValue('margin-top'));
         const scrollY = elemTop - menuHeight - marginTop;
-        window.scrollTo({ top: scrollY, left: 0, behavior: 'smooth' });
+        setTimeout(() => {
+          //  a strange bug, the scrollTo function doesn't work if it is called directly sometimes
+          window.scrollTo({ top: scrollY, left: 0, behavior: 'smooth' });
+        }, 200);
         toTopButton.style.transform += 'rotate(180deg)';
         arrowDirection = 'down';
       }

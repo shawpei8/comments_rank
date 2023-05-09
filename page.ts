@@ -33,24 +33,32 @@
   }
 
 
-  let currentSelectedItem: Element;
+  let currentSelectedItem: sortByItems;
   let sortByBox: Element;
+  enum sortByItems {
+    TOP_COMMENTS,
+    NEWEST_FIRST,
+    MOST_LIKES,
+    MOST_REPLIES
+  };
   waitForElem("#sort-menu").then((elem) => {
     // console.log(elem);
     const sortBySelector = "tp-yt-paper-listbox";
     const sortByItemTxtSelector = "div.item";
     sortByBox = elem.querySelector(sortBySelector) as Element;
-    let lastSelectedItem = sortByBox.children[0];
+    const menuItems = sortByBox.children;
+    let lastSelectedItem = sortByItems.TOP_COMMENTS
     currentSelectedItem = lastSelectedItem;
 
-    const sortMenuBtn = document.querySelector("#sort-menu") as HTMLElement;
-    sortMenuBtn?.addEventListener('click', () => {
+    const sortMenuBtn = elem as HTMLElement;
+    sortMenuBtn.addEventListener('click', () => {
       if (currentSelectedItem !== lastSelectedItem) {
-        lowlightMenuItem(lastSelectedItem);
-        lastSelectedItem = currentSelectedItem;
+        lowlightMenuItem(menuItems[lastSelectedItem]);
       }
+      setTimeout(() => {
+        (menuItems[currentSelectedItem].children[0] as HTMLElement).focus();
+      }, 100);
     });
-
 
     if (sortByBox.children.length === 3) {
       // add 'Most likes' item
@@ -58,44 +66,55 @@
       (likeItem.querySelector(sortByItemTxtSelector) as HTMLElement).innerText = 'Most likes';
       sortByBox.children[1].insertAdjacentElement('afterend', likeItem);
       likeItem.addEventListener('click', () => {
+        if (currentSelectedItem !== sortByItems.MOST_LIKES) {
+          lowlightMenuItem(menuItems[currentSelectedItem]);
+          highlightMenuItem(likeItem);
+          lastSelectedItem = currentSelectedItem;
+          currentSelectedItem = sortByItems.MOST_LIKES;
+        }
         sortComments(nlikes);
-        setTimeout(() => sortMenuBtn.click(), 500);
+        setTimeout(() => sortMenuBtn.click(), 300);
       });
       // add 'Most replies' item
       const replyItem = <Element>sortByBox.children[1].cloneNode(true);
       (replyItem.querySelector(sortByItemTxtSelector) as HTMLElement).innerText = 'Most replies';
       sortByBox.children[2].insertAdjacentElement('afterend', replyItem);
       replyItem.addEventListener('click', () => {
+        if (currentSelectedItem !== sortByItems.MOST_REPLIES) {
+          lowlightMenuItem(menuItems[currentSelectedItem]);
+          highlightMenuItem(replyItem);
+          lastSelectedItem = currentSelectedItem;
+          currentSelectedItem = sortByItems.MOST_REPLIES;
+        }
         sortComments(nreplies);
-        setTimeout(() => sortMenuBtn.click(), 500);
+        setTimeout(() => sortMenuBtn.click(), 300);
       });
     };
-    for (const item of sortByBox.children) {
-      item.addEventListener('click', () => {
-        if (currentSelectedItem !== item) {
-          lowlightMenuItem(currentSelectedItem);
-          highlightMenuItem(item);
-          currentSelectedItem = item;
+
+    for (let i = 0; i < menuItems.length; i++) {
+      menuItems[i].addEventListener('click', () => {
+        if (menuItems[currentSelectedItem] !== menuItems[i]) {
+          lowlightMenuItem(menuItems[currentSelectedItem]);
+          highlightMenuItem(menuItems[i]);
+          lastSelectedItem = currentSelectedItem;
+          currentSelectedItem = i;
         }
-      });
+      })
     }
   });
 
   type ExtractFunc = (elem: Element) => number;
 
   function nlikes(elem: Element): number {
-    const likeBtnSelector = "#like-button button";
-    const likeBtn = elem.querySelector(likeBtnSelector) as Element;
-    const likes = likeBtn.getAttribute("aria-label")?.split(' ')[5].split(',') as string[];
-    return parseInt(likes.join(''));
+    const likeBtn = elem.querySelector("#like-button button") as HTMLButtonElement;
+    const likes = likeBtn?.getAttribute("aria-label")!.match(/[\d,]+/g);
+    return parseInt(likes?.[0]?.replace(/,/g, '') || '0');
   }
 
   function nreplies(elem: Element): number {
-    const replyBtnSelector = "#more-replies button";
-    const replyBtn = elem.querySelector(replyBtnSelector) as Element;
-    if (!replyBtn) return 0;
-    const replies = replyBtn.getAttribute("aria-label")?.split(' ')[0].split(',') as string[];
-    return parseInt(replies.join(''));
+    const replyBtn = elem.querySelector("#more-replies button") as HTMLButtonElement;
+    const replies = replyBtn?.getAttribute("aria-label")!.match(/[\d,]+/g);
+    return parseInt(replies?.[0]?.replace(/,/g, '') || '0');
   }
 
   const commentSelector = "ytd-comment-thread-renderer";
@@ -109,55 +128,43 @@
     const contents = document.querySelector(contentsSelector);
     if (contents) {
       const comments = Array.from(contents.querySelectorAll(commentSelector));
-      // sort comments accroding to compare function
       comments.sort(compare);
 
       // save last element which used to trigger new request when scroll
       const lastChild = contents.lastChild as ChildNode;
-      // remove comments of contents
+
+      // show in page
       while (contents.firstChild) {
         contents.removeChild(contents.firstChild);
       }
-
-      // add sorted comments to contents
       for (const comment of comments) {
         contents.appendChild(comment);
       }
       contents.appendChild(lastChild);
     }
   }
-  function isMultipleof21(num: number) {
-    return num % 21 == 0;
-  }
 
   waitForElem(contentsSelector).then((elem) => {
-    let count = 0;
     const observer = new MutationObserver(mutations => {
       // console.log(mutations);
       mutations.forEach(mutation => {
-        count += mutation.addedNodes.length;
-      });
-      if (count !== 21 && isMultipleof21(count)) {
-        observer.disconnect(); // stop observing mutations
-        if (currentSelectedItem === sortByBox.children[2]) {
-          sortComments(nlikes);
-        } else if (currentSelectedItem === sortByBox.children[3]) {
-          sortComments(nreplies);
+        if (mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeName === 'YTD-CONTINUATION-ITEM-RENDERER') {
+              observer.disconnect();
+              if (currentSelectedItem === sortByItems.MOST_LIKES) {
+                sortComments(nlikes);
+              } else if (currentSelectedItem === sortByItems.MOST_REPLIES) {
+                sortComments(nreplies);
+              }
+              observer.observe(elem, { childList: true });
+            }
+          });
         }
-        console.log('count is ' + count);
-        observer.observe(elem, { childList: true }); // start observing mutations again
-      }
+      });
     });
     observer.observe(elem, { childList: true });
   });
-
-  // function scrollToPosition(position: number, retries = 10) {
-  //   console.log('retries is ' + retries);
-  //   window.scrollTo({ top: position, left: 0, behavior: 'smooth' });
-  //   if (Math.abs(window.scrollY - position) > 5 && retries > 0) {
-  //     scrollToPosition(position, retries - 1);
-  //   }
-  // };
 
   waitForElem('#comments').then(elem => {
     console.log(elem);
@@ -177,7 +184,7 @@
     window.addEventListener('scroll', () => {
       currentScrollTop = window.scrollY || document.documentElement.scrollTop;
       const commentsTop = elem.getBoundingClientRect().top;
-      // make sure the button is visible when scrolling to comments top
+      // Make sure the button is visible when scrolling to comments top
       if (commentsTop - menuHeight - toTopButton.offsetHeight < 0) {
         toTopButton.style.visibility = 'visible';
       } else {
@@ -185,9 +192,9 @@
       }
     });
 
-    // back to top button click event
+    // Back to top button click event
     toTopButton.addEventListener('click', function (event) {
-      event.preventDefault(); //prevent default anchor behavior
+      event.preventDefault();
       if (currentScrollTop > previousScrollTop) {
         previousScrollTop = currentScrollTop;
       }

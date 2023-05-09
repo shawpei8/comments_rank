@@ -31,61 +31,81 @@
     }
     let currentSelectedItem;
     let sortByBox;
+    let sortByItems;
+    (function (sortByItems) {
+        sortByItems[sortByItems["TOP_COMMENTS"] = 0] = "TOP_COMMENTS";
+        sortByItems[sortByItems["NEWEST_FIRST"] = 1] = "NEWEST_FIRST";
+        sortByItems[sortByItems["MOST_LIKES"] = 2] = "MOST_LIKES";
+        sortByItems[sortByItems["MOST_REPLIES"] = 3] = "MOST_REPLIES";
+    })(sortByItems || (sortByItems = {}));
+    ;
     waitForElem("#sort-menu").then((elem) => {
         const sortBySelector = "tp-yt-paper-listbox";
         const sortByItemTxtSelector = "div.item";
         sortByBox = elem.querySelector(sortBySelector);
-        let lastSelectedItem = sortByBox.children[0];
+        const menuItems = sortByBox.children;
+        let lastSelectedItem = sortByItems.TOP_COMMENTS;
         currentSelectedItem = lastSelectedItem;
-        const sortMenuBtn = document.querySelector("#sort-menu");
-        sortMenuBtn === null || sortMenuBtn === void 0 ? void 0 : sortMenuBtn.addEventListener('click', () => {
+        const sortMenuBtn = elem;
+        sortMenuBtn.addEventListener('click', () => {
             if (currentSelectedItem !== lastSelectedItem) {
-                lowlightMenuItem(lastSelectedItem);
-                lastSelectedItem = currentSelectedItem;
+                lowlightMenuItem(menuItems[lastSelectedItem]);
             }
+            setTimeout(() => {
+                menuItems[currentSelectedItem].children[0].focus();
+            }, 100);
         });
         if (sortByBox.children.length === 3) {
             const likeItem = sortByBox.children[1].cloneNode(true);
             likeItem.querySelector(sortByItemTxtSelector).innerText = 'Most likes';
             sortByBox.children[1].insertAdjacentElement('afterend', likeItem);
             likeItem.addEventListener('click', () => {
+                if (currentSelectedItem !== sortByItems.MOST_LIKES) {
+                    lowlightMenuItem(menuItems[currentSelectedItem]);
+                    highlightMenuItem(likeItem);
+                    lastSelectedItem = currentSelectedItem;
+                    currentSelectedItem = sortByItems.MOST_LIKES;
+                }
                 sortComments(nlikes);
-                setTimeout(() => sortMenuBtn.click(), 500);
+                setTimeout(() => sortMenuBtn.click(), 300);
             });
             const replyItem = sortByBox.children[1].cloneNode(true);
             replyItem.querySelector(sortByItemTxtSelector).innerText = 'Most replies';
             sortByBox.children[2].insertAdjacentElement('afterend', replyItem);
             replyItem.addEventListener('click', () => {
+                if (currentSelectedItem !== sortByItems.MOST_REPLIES) {
+                    lowlightMenuItem(menuItems[currentSelectedItem]);
+                    highlightMenuItem(replyItem);
+                    lastSelectedItem = currentSelectedItem;
+                    currentSelectedItem = sortByItems.MOST_REPLIES;
+                }
                 sortComments(nreplies);
-                setTimeout(() => sortMenuBtn.click(), 500);
+                setTimeout(() => sortMenuBtn.click(), 300);
             });
         }
         ;
-        for (const item of sortByBox.children) {
-            item.addEventListener('click', () => {
-                if (currentSelectedItem !== item) {
-                    lowlightMenuItem(currentSelectedItem);
-                    highlightMenuItem(item);
-                    currentSelectedItem = item;
+        for (let i = 0; i < menuItems.length; i++) {
+            menuItems[i].addEventListener('click', () => {
+                if (menuItems[currentSelectedItem] !== menuItems[i]) {
+                    lowlightMenuItem(menuItems[currentSelectedItem]);
+                    highlightMenuItem(menuItems[i]);
+                    lastSelectedItem = currentSelectedItem;
+                    currentSelectedItem = i;
                 }
             });
         }
     });
     function nlikes(elem) {
         var _a;
-        const likeBtnSelector = "#like-button button";
-        const likeBtn = elem.querySelector(likeBtnSelector);
-        const likes = (_a = likeBtn.getAttribute("aria-label")) === null || _a === void 0 ? void 0 : _a.split(' ')[5].split(',');
-        return parseInt(likes.join(''));
+        const likeBtn = elem.querySelector("#like-button button");
+        const likes = likeBtn === null || likeBtn === void 0 ? void 0 : likeBtn.getAttribute("aria-label").match(/[\d,]+/g);
+        return parseInt(((_a = likes === null || likes === void 0 ? void 0 : likes[0]) === null || _a === void 0 ? void 0 : _a.replace(/,/g, '')) || '0');
     }
     function nreplies(elem) {
         var _a;
-        const replyBtnSelector = "#more-replies button";
-        const replyBtn = elem.querySelector(replyBtnSelector);
-        if (!replyBtn)
-            return 0;
-        const replies = (_a = replyBtn.getAttribute("aria-label")) === null || _a === void 0 ? void 0 : _a.split(' ')[0].split(',');
-        return parseInt(replies.join(''));
+        const replyBtn = elem.querySelector("#more-replies button");
+        const replies = replyBtn === null || replyBtn === void 0 ? void 0 : replyBtn.getAttribute("aria-label").match(/[\d,]+/g);
+        return parseInt(((_a = replies === null || replies === void 0 ? void 0 : replies[0]) === null || _a === void 0 ? void 0 : _a.replace(/,/g, '')) || '0');
     }
     const commentSelector = "ytd-comment-thread-renderer";
     const contentsSelector = "#comments #contents";
@@ -107,26 +127,24 @@
             contents.appendChild(lastChild);
         }
     }
-    function isMultipleof21(num) {
-        return num % 21 == 0;
-    }
     waitForElem(contentsSelector).then((elem) => {
-        let count = 0;
         const observer = new MutationObserver(mutations => {
             mutations.forEach(mutation => {
-                count += mutation.addedNodes.length;
+                if (mutation.addedNodes.length > 0) {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeName === 'YTD-CONTINUATION-ITEM-RENDERER') {
+                            observer.disconnect();
+                            if (currentSelectedItem === sortByItems.MOST_LIKES) {
+                                sortComments(nlikes);
+                            }
+                            else if (currentSelectedItem === sortByItems.MOST_REPLIES) {
+                                sortComments(nreplies);
+                            }
+                            observer.observe(elem, { childList: true });
+                        }
+                    });
+                }
             });
-            if (count !== 21 && isMultipleof21(count)) {
-                observer.disconnect();
-                if (currentSelectedItem === sortByBox.children[2]) {
-                    sortComments(nlikes);
-                }
-                else if (currentSelectedItem === sortByBox.children[3]) {
-                    sortComments(nreplies);
-                }
-                console.log('count is ' + count);
-                observer.observe(elem, { childList: true });
-            }
         });
         observer.observe(elem, { childList: true });
     });

@@ -3,6 +3,8 @@ console.log("Startup");
 ! function () {
   const e = document.querySelectorAll(`script[src="chrome-extension://${chrome.runtime.id}/page.js"]`);
   for (const t of e) t.remove();
+  const m = document.querySelectorAll('top-button.back-to-top');
+  for (const t of m) t.remove();
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.type = 'text/css';

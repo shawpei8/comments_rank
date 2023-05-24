@@ -56,6 +56,7 @@
         lowlightMenuItem(menuItems[lastSelectedItem]);
       }
       setTimeout(() => {
+        // focus style added by youtube
         (menuItems[currentSelectedItem].children[0] as HTMLElement).focus();
       }, 100);
     });
@@ -91,7 +92,7 @@
       });
     };
 
-    for (let i = 0; i < menuItems.length; i++) {
+    for (let i = 0; i < 2; i++) {
       menuItems[i].addEventListener('click', () => {
         if (menuItems[currentSelectedItem] !== menuItems[i]) {
           lowlightMenuItem(menuItems[currentSelectedItem]);
@@ -119,7 +120,13 @@
 
   const commentSelector = "ytd-comment-thread-renderer";
   const contentsSelector = "#comments #contents";
-  function sortComments(callback: ExtractFunc) {
+
+  async function getComments() {
+    const comments = document.querySelectorAll(commentSelector);
+    const commentsArr = Array.from(comments);
+    return commentsArr;
+  }
+  async function sortComments(callback: ExtractFunc) {
     // descending order
     function compare(firstEl: Element, secondEl: Element) {
       return callback(secondEl) - callback(firstEl);
@@ -127,16 +134,14 @@
 
     const contents = document.querySelector(contentsSelector);
     if (contents) {
-      const comments = Array.from(contents.querySelectorAll(commentSelector));
+      const comments = await getComments();
       comments.sort(compare);
 
       // save last element which used to trigger new request when scroll
       const lastChild = contents.lastChild as ChildNode;
 
-      // show in page
-      while (contents.firstChild) {
-        contents.removeChild(contents.firstChild);
-      }
+      // show sorted results
+      contents.innerHTML = '';
       for (const comment of comments) {
         contents.appendChild(comment);
       }
@@ -148,7 +153,7 @@
     const observer = new MutationObserver(mutations => {
       // console.log(mutations);
       mutations.forEach(mutation => {
-        if (mutation.addedNodes.length > 0) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach(node => {
             if (node.nodeName === 'YTD-CONTINUATION-ITEM-RENDERER') {
               observer.disconnect();
@@ -157,7 +162,9 @@
               } else if (currentSelectedItem === sortByItems.MOST_REPLIES) {
                 sortComments(nreplies);
               }
-              observer.observe(elem, { childList: true });
+              setTimeout(() => {
+                observer.observe(elem, { childList: true });
+              }, 200); // prevent infinite loop
             }
           });
         }
@@ -174,17 +181,24 @@
     toTopButton.innerHTML = '<div class="arrow-up"></div>';
     let arrowDirection = 'up';
 
-    // Add the button to the comments sections
+    // Position the button
     elem.insertAdjacentElement("afterend", toTopButton);
-    const commentsWidth = toTopButton.parentElement?.offsetWidth as number - 13;
+    function positionButton() {
+      const commentsWidth = toTopButton.parentElement?.offsetWidth as number - 13;
+      toTopButton.style.left = `${(toTopButton.parentElement?.offsetLeft ?? 0) + commentsWidth}px`;
+    }
+    positionButton();
+    window.addEventListener('resize', positionButton);
+
+
     const menuHeight = document.querySelector('#masthead')?.getBoundingClientRect().height as number;
-    toTopButton.style.transform += `translateX(${commentsWidth}px)`;
     let currentScrollTop = 0;
     let previousScrollTop = 0;
     window.addEventListener('scroll', () => {
       currentScrollTop = window.scrollY || document.documentElement.scrollTop;
       const commentsTop = elem.getBoundingClientRect().top;
       // Make sure the button is visible when scrolling to comments top
+      // if (window.scrollY > document.documentElement.clientHeight * 2) {
       if (commentsTop - menuHeight - toTopButton.offsetHeight < 0) {
         toTopButton.style.visibility = 'visible';
       } else {

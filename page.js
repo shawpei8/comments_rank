@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 (() => {
     function waitForElem(selector, onceOnly = true) {
         return new Promise((resolve) => {
@@ -84,7 +93,7 @@
             });
         }
         ;
-        for (let i = 0; i < menuItems.length; i++) {
+        for (let i = 0; i < 2; i++) {
             menuItems[i].addEventListener('click', () => {
                 if (menuItems[currentSelectedItem] !== menuItems[i]) {
                     lowlightMenuItem(menuItems[currentSelectedItem]);
@@ -109,28 +118,35 @@
     }
     const commentSelector = "ytd-comment-thread-renderer";
     const contentsSelector = "#comments #contents";
+    function getComments() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const comments = document.querySelectorAll(commentSelector);
+            const commentsArr = Array.from(comments);
+            return commentsArr;
+        });
+    }
     function sortComments(callback) {
-        function compare(firstEl, secondEl) {
-            return callback(secondEl) - callback(firstEl);
-        }
-        const contents = document.querySelector(contentsSelector);
-        if (contents) {
-            const comments = Array.from(contents.querySelectorAll(commentSelector));
-            comments.sort(compare);
-            const lastChild = contents.lastChild;
-            while (contents.firstChild) {
-                contents.removeChild(contents.firstChild);
+        return __awaiter(this, void 0, void 0, function* () {
+            function compare(firstEl, secondEl) {
+                return callback(secondEl) - callback(firstEl);
             }
-            for (const comment of comments) {
-                contents.appendChild(comment);
+            const contents = document.querySelector(contentsSelector);
+            if (contents) {
+                const comments = yield getComments();
+                comments.sort(compare);
+                const lastChild = contents.lastChild;
+                contents.innerHTML = '';
+                for (const comment of comments) {
+                    contents.appendChild(comment);
+                }
+                contents.appendChild(lastChild);
             }
-            contents.appendChild(lastChild);
-        }
+        });
     }
     waitForElem(contentsSelector).then((elem) => {
         const observer = new MutationObserver(mutations => {
             mutations.forEach(mutation => {
-                if (mutation.addedNodes.length > 0) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                     mutation.addedNodes.forEach(node => {
                         if (node.nodeName === 'YTD-CONTINUATION-ITEM-RENDERER') {
                             observer.disconnect();
@@ -140,7 +156,9 @@
                             else if (currentSelectedItem === sortByItems.MOST_REPLIES) {
                                 sortComments(nreplies);
                             }
-                            observer.observe(elem, { childList: true });
+                            setTimeout(() => {
+                                observer.observe(elem, { childList: true });
+                            }, 200);
                         }
                     });
                 }
@@ -149,16 +167,21 @@
         observer.observe(elem, { childList: true });
     });
     waitForElem('#comments').then(elem => {
-        var _a, _b;
+        var _a;
         console.log(elem);
         const toTopButton = document.createElement('top-button');
         toTopButton.className = 'back-to-top';
         toTopButton.innerHTML = '<div class="arrow-up"></div>';
         let arrowDirection = 'up';
         elem.insertAdjacentElement("afterend", toTopButton);
-        const commentsWidth = ((_a = toTopButton.parentElement) === null || _a === void 0 ? void 0 : _a.offsetWidth) - 13;
-        const menuHeight = (_b = document.querySelector('#masthead')) === null || _b === void 0 ? void 0 : _b.getBoundingClientRect().height;
-        toTopButton.style.transform += `translateX(${commentsWidth}px)`;
+        function positionButton() {
+            var _a, _b, _c;
+            const commentsWidth = ((_a = toTopButton.parentElement) === null || _a === void 0 ? void 0 : _a.offsetWidth) - 13;
+            toTopButton.style.left = `${((_c = (_b = toTopButton.parentElement) === null || _b === void 0 ? void 0 : _b.offsetLeft) !== null && _c !== void 0 ? _c : 0) + commentsWidth}px`;
+        }
+        positionButton();
+        window.addEventListener('resize', positionButton);
+        const menuHeight = (_a = document.querySelector('#masthead')) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect().height;
         let currentScrollTop = 0;
         let previousScrollTop = 0;
         window.addEventListener('scroll', () => {

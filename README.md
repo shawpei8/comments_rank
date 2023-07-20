@@ -1,2 +1,2 @@
 # comments_rank
-chrome extension to sort youtube comments
+Chrome extension to sort youtube comments according to likes or replies number

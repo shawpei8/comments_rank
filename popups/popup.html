@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset="UTF-8">
-    <title>Document</title>
-    <style>
-      html {
-        min-height: auto;
-        min-width: 15em;
-        background: rgba(250, 128, 114, 0.774);
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="popup.css">
+  <script src="popup.js"></script>
+</head>
 
-  <body>
-    <h1>Sort the Comments</h1>
-    <div>
-      <p>Look up the comments under the video, sort the comments by likes or replies</p>
+<body>
+  <!-- <h1>Sort Comments</h1> -->
+  <div style="display: flex; justify-content: center;">
+    <h1>Sort Comments</h1>
+  </div>
+
+  <div>
+    <p>Sort comments by likes or replies based on the Top comments or Newest first or prefetched comments</p>
+  </div>
+  <div style="display: flex; align-items: center;">
+    <label class="switch">
+      <input type="checkbox" id="getAllComments">
+      <span class="slider round"></span>
+    </label>
+    <div style="margin-left: 15px;">
+      <p>Get all comments before sort</p>
     </div>
-    <ul>
-      <li>image</li>
-      <li>image</li>
-      <li>image</li>
-    </ul>
-
-  </body>
+  </div>
+</body>
 
 </html>

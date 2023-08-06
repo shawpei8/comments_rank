@@ -1,34 +1,63 @@
+/* @media (prefers-color-scheme: dark) {
+  top-button.back-to-top {
+    background-color: rgba(198, 203, 203, 0.3);
+  }
+
+  div.arrow-up {
+    border-color: whitesmoke;
+  }
+} */
+
 .back-to-top {
-  width: 30px;
-  height: 30px;
   position: fixed;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
   bottom: 20%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0288D1;
-  /* padding: 10px; */
+  background-color: transparent;
   border-radius: 50%;
-  /* why 1.0s? it's all about testing */
-  transition: transform 1.0s ease;
-  opacity: 0.8;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(2, 136, 209);
+  transition: transform 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  opacity: 1.0;
   z-index: 99;
   visibility: hidden;
 }
 
 .back-to-top:hover {
-  opacity: 1;
+  opacity: 0.8;
 }
+
+/* .back-to-top:hover::after {
+  content: 'Back to';
+  display: inline-block;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: whitesmoke;
+  font-size: 12px;
+  border-radius: 5px;
+} */
 
 .back-to-top.show {
   visibility: visible;
 }
 
 .arrow-up {
-  margin-top: 5px;
+  margin-top: 4px;
   margin-left: 1px;
-  border: solid whitesmoke;
+  margin-right: 1px;
+  border: solid rgb(28, 130, 171);
+  /* border: solid rgba(15, 15, 15, 0.9); */
   border-width: 2px 2px 0 0;
+  border-radius: 1px;
   display: inline-block;
   padding: 5px;
   transform: rotate(-45deg);
